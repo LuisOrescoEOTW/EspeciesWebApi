@@ -1,0 +1,50 @@
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+import models, schemas
+from database import SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func
+
+# ==== Inicialización FastAPI ====
+app = FastAPI()
+
+# ==== (Opcional) Habilitar CORS para pruebas con frontend ====
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cambiar por el dominio de tu frontend si es necesario
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ==== Dependencia para obtener la sesión de DB ====
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# ==== ENDPOINTS ESPECIES ====
+
+@app.get("/especies/GetAll", response_model=list[schemas.Especie])
+def especiesGetAllOrder(db: Session = Depends(get_db)):
+    return db.query(models.Especies).order_by(models.Especies.sp_id).all()
+
+@app.get("/especies/GetByReino/{reino}", response_model=list[schemas.Especie])
+def especiesGetByReino(reino: str, db: Session = Depends(get_db)):
+    return db.query(models.Especies).filter(models.Especies.reino == reino).order_by(models.Especies.nombre_cientifico).all()
+
+
+# ==== ENDPOINTS REPORTES ====
+@app.get("/reportes/GetAll", response_model=list[schemas.Reporte])
+def reportesGetAllOrder(db: Session = Depends(get_db)):
+    return db.query(models.Reportes).order_by(models.Reportes.id).all()
+
+@app.post("/reportes/", response_model=schemas.Reporte)
+def crear_reporte(reporte: schemas.ReporteCreate, db: Session = Depends(get_db)):
+    nuevo = models.Reportes(**reporte.dict())
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
