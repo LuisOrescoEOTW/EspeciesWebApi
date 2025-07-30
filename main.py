@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 import models, schemas
 from database import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func
+# from sqlalchemy import func
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Carga las variables del archivo .env
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 # ==== Inicialización FastAPI ====
 app = FastAPI()
@@ -11,7 +18,7 @@ app = FastAPI()
 # ==== (Opcional) Habilitar CORS para pruebas con frontend ====
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cambiar por el dominio de tu frontend si es necesario
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
