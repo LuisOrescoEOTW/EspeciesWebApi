@@ -36,12 +36,18 @@ def get_db():
 
 @app.get("/especies/GetAll", response_model=list[schemas.Especie])
 def especiesGetAllOrder(db: Session = Depends(get_db)):
-    return db.query(models.Especies).order_by(models.Especies.sp_id).all()
+    return db.query(models.Especies).order_by(models.Especies.nombre_cientifico).all()
 
 @app.get("/especies/GetByReino/{reino}", response_model=list[schemas.Especie])
 def especiesGetByReino(reino: str, db: Session = Depends(get_db)):
     return db.query(models.Especies).filter(models.Especies.reino == reino).order_by(models.Especies.nombre_cientifico).all()
 
+@app.get("/especies/GetByReinoTodos/{reino}", response_model=list[schemas.Especie])
+def especiesGetByReinoTodos(reino: str, db: Session = Depends(get_db)):
+    query = db.query(models.Especies).order_by(models.Especies.nombre_cientifico)
+    if reino == "TODOS":
+        return query.all()
+    return query.filter(models.Especies.reino == reino).all()
 
 # ==== ENDPOINTS REPORTES ====
 @app.get("/reportes/GetAll", response_model=list[schemas.Reporte])
@@ -49,7 +55,7 @@ def reportesGetAllOrder(db: Session = Depends(get_db)):
     return db.query(models.Reportes).order_by(models.Reportes.id).all()
 
 @app.post("/reportes/", response_model=schemas.Reporte)
-def crear_reporte(reporte: schemas.ReporteCreate, db: Session = Depends(get_db)):
+def crear_reporte(reporte: schemas.Reporte, db: Session = Depends(get_db)):
     nuevo = models.Reportes(**reporte.dict())
     db.add(nuevo)
     db.commit()
