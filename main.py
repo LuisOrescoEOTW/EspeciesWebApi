@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # from sqlalchemy import func
 import os
 from dotenv import load_dotenv
+from sqlalchemy.orm import joinedload
 
 load_dotenv()  # Carga las variables del archivo .env
 
@@ -53,6 +54,18 @@ def especiesGetByReinoTodos(reino: str, db: Session = Depends(get_db)):
 @app.get("/reportes/GetAll", response_model=list[schemas.Reporte])
 def reportesGetAllOrder(db: Session = Depends(get_db)):
     return db.query(models.Reportes).order_by(models.Reportes.id).all()
+
+@app.get("/reportes/GetByReinoTodos/{reino}", response_model=list[schemas.Reporte])
+def reportesGetByReinoTodos(reino: str, db: Session = Depends(get_db)):
+    query = (
+        db.query(models.Reportes)
+        .options(joinedload(models.Reportes.especie))  # carga especie en la misma query
+        .join(models.Especies, models.Reportes.sp_id == models.Especies.sp_id)  # join explícito
+    )
+
+    if reino != "TODOS":
+        query = query.filter(models.Especies.reino == reino)
+    return query.order_by(models.Especies.nombre_cientifico).all()
 
 @app.post("/reportes/", response_model=schemas.Reporte)
 def crear_reporte(reporte: schemas.Reporte, db: Session = Depends(get_db)):
