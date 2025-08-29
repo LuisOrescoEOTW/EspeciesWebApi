@@ -13,7 +13,8 @@ class Especie(BaseModel):
     origen: Optional[str]
     imagen: Optional[str]
     class Config:
-        orm_mode = True
+        #orm_mode = True  # Win
+        from_attributes = True  # Linux
 
 # ==== REPORTES ====
 class Reporte(BaseModel):
@@ -28,4 +29,5 @@ class Reporte(BaseModel):
     especie: Optional[Especie]  # Relación
 
     class Config:
-        orm_mode = True
+        #orm_mode = True  # Win
+        from_attributes = True  # Linux
