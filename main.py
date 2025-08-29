@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 import models, schemas
 from database import SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
-# from sqlalchemy import func
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import joinedload
